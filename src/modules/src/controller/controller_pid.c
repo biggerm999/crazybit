@@ -168,15 +168,15 @@ void controllerPid(control_t *control, const setpoint_t *setpoint,
   }
 
   float ff = (2.5f + 1.5f/60000 * setpoint->thrust); // 0xFFFF = 65535, max_thrust
-  if (control->time_temp/10 > 1/ff/12){
+  if (control->time_temp > 1000.0/ff/12){
     if (control->step == 11) {
       control->step = 0;
     }
     else{
       control->step = control->step + 1;
     }
-    control->time_temp = 0;
     tempStep = control->step;
+    control->time_temp = 0;
   }
   
   cmd_thrust = control->thrust;
