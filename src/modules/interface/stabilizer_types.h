@@ -196,6 +196,7 @@ typedef struct control_s {
       int16_t roll;
       int16_t pitch;
       int16_t yaw;
+      int16_t step;
       float thrust;
     };
 
@@ -219,6 +220,7 @@ typedef struct control_s {
   };
 
   control_mode_t controlMode;
+  uint16_t time_temp;      // ms
 } control_t;
 
 typedef union {

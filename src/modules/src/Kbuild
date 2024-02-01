@@ -30,6 +30,7 @@ obj-y += planner.o
 obj-y += platformservice.o
 obj-$(CONFIG_POWER_DISTRIBUTION_QUADROTOR) += power_distribution_quadrotor.o
 obj-$(CONFIG_POWER_DISTRIBUTION_FLAPPER) += power_distribution_flapper.o
+obj-$(CONFIG_POWER_DISTRIBUTION_KROSWAN) += power_distribution_kroswan.o
 obj-y += pptraj_compressed.o
 obj-y += pptraj.o
 obj-y += queuemonitor.o

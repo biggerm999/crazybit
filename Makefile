@@ -107,14 +107,17 @@ ifeq ($(CONFIG_PLATFORM_FLAPPER),y)
 PLATFORM = flapper
 endif
 
+ifeq ($(CONFIG_PLATFORM_KROSWAN),y)
+PLATFORM = kroswan
+endif
 
-PLATFORM  ?= cf2
+PLATFORM  ?= cf2sl
 PROG ?= $(PLATFORM)
 
 ifeq ($(CONFIG_DEBUG),y)
 ARCH_CFLAGS	+= -O0 -Wconversion
 else
-ARCH_CFLAGS += -Os -Werror
+# ARCH_CFLAGS += -Os -Werror
 endif
 
 _all:

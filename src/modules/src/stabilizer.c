@@ -276,6 +276,7 @@ static void stabilizerTask(void* param)
   }
   // Initialize stabilizerStep to something else than 0
   stabilizerStep = 1;
+  control.time_temp = 3;
 
   systemWaitStart();
   DEBUG_PRINT("Starting stabilizer loop\n");
@@ -309,12 +310,14 @@ static void stabilizerTask(void* param)
       // Let the supervisor update it's view of the current situation
       supervisorUpdate(&sensorData, &setpoint, stabilizerStep);
 
+
       // Let the collision avoidance module modify the setpoint, if needed
       collisionAvoidanceUpdateSetpoint(&setpoint, &sensorData, &state, stabilizerStep);
 
       // Critical for safety, be careful if you modify this code!
       // Let the supervisor modify the setpoint to handle exceptional conditions
       supervisorOverrideSetpoint(&setpoint);
+
 
       controller(&control, &setpoint, &sensorData, &state, stabilizerStep);
 
@@ -340,6 +343,7 @@ static void stabilizerTask(void* param)
 #endif
       calcSensorToOutputLatency(&sensorData);
       stabilizerStep++;
+      control.time_temp++;
       STATS_CNT_RATE_EVENT(&stabilizerRate);
 
       if (!rateSupervisorValidate(&rateSupervisorContext, xTaskGetTickCount())) {
@@ -432,6 +436,10 @@ LOG_ADD_CORE(LOG_FLOAT, roll, &setpoint.attitude.roll)
 
 /**
  * @brief Desired attitude, pitch [deg]
+ */
+LOG_ADD_CORE(LOG_FLOAT, pitch, &setpoint.attitude.pitch)
+/**
+ * @brief Desired attitude, thrust [?]
  */
 LOG_ADD_CORE(LOG_FLOAT, pitch, &setpoint.attitude.pitch)
 
@@ -821,23 +829,23 @@ LOG_GROUP_START(motor)
  * @brief Requested motor power for m1, including battery compensation. Same scale as the motor PWM but uncapped
  * and may have values outside the [0 - UINT16_MAX] range.
  */
-LOG_ADD(LOG_INT32, m1req, &motorThrustBatCompUncapped.motors.m1)
+LOG_ADD(LOG_INT32, m1req, &motorThrustUncapped.motors.m1)
 
 /**
  * @brief Requested motor power for m1, including battery compensation. Same scale as the motor PWM but uncapped
  * and may have values outside the [0 - UINT16_MAX] range.
  */
-LOG_ADD(LOG_INT32, m2req, &motorThrustBatCompUncapped.motors.m2)
+LOG_ADD(LOG_INT32, m2req, &motorThrustUncapped.motors.m2)
 
 /**
  * @brief Requested motor power for m1, including battery compensation. Same scale as the motor PWM but uncapped
  * and may have values outside the [0 - UINT16_MAX] range.
  */
-LOG_ADD(LOG_INT32, m3req, &motorThrustBatCompUncapped.motors.m3)
+LOG_ADD(LOG_INT32, m3req, &motorThrustUncapped.motors.m3)
 
 /**
  * @brief Requested motor power for m1, including battery compensation. Same scale as the motor PWM but uncapped
  * and may have values outside the [0 - UINT16_MAX] range.
  */
-LOG_ADD(LOG_INT32, m4req, &motorThrustBatCompUncapped.motors.m4)
+LOG_ADD(LOG_INT32, m4req, &motorThrustUncapped.motors.m4)
 LOG_GROUP_STOP(motor)

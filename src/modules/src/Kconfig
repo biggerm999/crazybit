@@ -200,8 +200,14 @@ config POWER_DISTRIBUTION_FLAPPER
     depends on PLATFORM_FLAPPER
     help
         Power distribution function for Flapper Nimble+
+config POWER_DISTRIBUTION_KROSWAN
+    bool "KRoSwan power distribution"
+    depends on PLATFORM_KROSWAN
+    help
+        Power distribution function for KRoSwan
 
 endchoice
+
 config POWER_DISTRIBUTION_FLAPPER_REVB
     bool "Flapper  Nimble+ power distribution (PCB revision B)"
     depends on POWER_DISTRIBUTION_FLAPPER

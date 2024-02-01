@@ -126,8 +126,8 @@
  * base as for the regular PWM driver. This means it will be a PWM with a period of the update rate configured to be high
  * only in the 1-2 ms range.
  */
-  #define BLMC_PERIOD 0.0025   // 2.5ms = 400Hz
-  #define MOTORS_HIGH_PERIOD_ZERO  0.001 // 1ms for zero throttle
+  #define BLMC_PERIOD 1/333   // 2.5ms = 400Hz
+  #define MOTORS_HIGH_PERIOD_ZERO  0.0005 // 1ms for zero throttle
 
   #define MOTORS_BL_PWM_PRESCALE_RAW   (uint32_t)((TIM_CLOCK_HZ/0xFFFF) * BLMC_PERIOD + 1) // +1 is to not end up above 0xFFFF in the end
   #define MOTORS_BL_PWM_CNT_FOR_PERIOD (uint32_t)(TIM_CLOCK_HZ * BLMC_PERIOD / MOTORS_BL_PWM_PRESCALE_RAW)

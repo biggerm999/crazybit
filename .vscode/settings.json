@@ -5,6 +5,9 @@
         "**/bower_components": true
     },
     "files.associations": {
-        "bootloader.h": "c"
-    }
+        "bootloader.h": "c",
+        "functional": "cpp",
+        "stabilizer_types.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "enabled"
 }

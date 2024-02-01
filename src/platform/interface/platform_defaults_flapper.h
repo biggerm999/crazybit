@@ -140,7 +140,7 @@
     #define IMU_PSI                   180.0f
 #else
     #define IMU_PHI                   0.0f
-    #define IMU_THETA                -90.0f
+    #define IMU_THETA                 0.0f
     #define IMU_PSI                   180.0f
 #endif
 

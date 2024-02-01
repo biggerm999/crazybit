@@ -104,7 +104,7 @@ static uint32_t cycleTime;
 #ifndef CONFIG_MOTORS_ESC_PROTOCOL_DSHOT
 static uint16_t motorsBLConv16ToBits(uint16_t bits)
 {
-  return (MOTORS_BL_PWM_CNT_FOR_HIGH + ((bits * MOTORS_BL_PWM_CNT_FOR_HIGH) / 0xFFFF));
+  return (MOTORS_BL_PWM_CNT_FOR_HIGH + 4*((bits * MOTORS_BL_PWM_CNT_FOR_HIGH) / 0xFFFF));
 }
 #endif
 

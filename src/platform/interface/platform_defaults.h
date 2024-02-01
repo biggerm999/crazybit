@@ -43,6 +43,10 @@
 #ifdef CONFIG_PLATFORM_FLAPPER
     #include "platform_defaults_flapper.h"
 #endif
+#ifdef CONFIG_PLATFORM_KROSWAN
+    #include "platform_defaults_kroswan.h"
+    #include "platform_defaults_bolt.h"
+#endif
 
 // IMU alignment on the airframe 
 #ifndef IMU_PHI

@@ -63,7 +63,32 @@ struct flapperConfig_s flapperConfig = {
 static float thrust;
 static uint16_t act_max = 65535;
 
-static float pitch_ampl = 0.4f; // 1 = full servo stroke
+const int16_t inc_L10 = 90;
+const int16_t inc_R10 = 90;
+const int16_t amp_L10 = -35;
+const int16_t amp_R10 = 35;
+const int16_t inc_L20 = (90 + 28);
+const int16_t inc_R20 = (90 - 28);
+const int16_t amp_L20 = 35;
+const int16_t amp_R20 = -35;
+
+const float D = 0.6;
+
+const int16_t nf = 2;
+// r1 = 168, r2 = 20, r3 = 168, r4 = 15
+// amp1 = 30, f1 = (0.35)
+const double a1[2] = {0.878152, 0.131394};
+const double b1[2] = {-0.447441, 0.095463};
+
+// flex_max = 55, f2 = (0.3, 0.65, 0.65)
+const double a2[2] = {0.219197, 0.035761};
+const double b2[2] = {0.301966, -0.110659};
+
+
+void powerDistributionInit(void);
+bool powerDistributionTest(void);
+
+// static float pitch_ampl = 0.4f; // 1 = full servo stroke
 
 #if CONFIG_POWER_DISTRIBUTION_FLAPPER_REVB
   uint32_t idPitch = 1;
@@ -162,6 +187,7 @@ void powerDistribution(const control_t *control, motors_thrust_uncapped_t* motor
   // Only legacy mode is currently supported
   ASSERT(control->controlMode == controlModeLegacy);
 
+
   thrust = fmin(control->thrust, flapperConfig.maxThrust);
 
   flapperConfig.pitchServoNeutral=limitServoNeutral(flapperConfig.pitchServoNeutral);
@@ -174,11 +200,56 @@ void powerDistribution(const control_t *control, motors_thrust_uncapped_t* motor
     motorThrustUncapped->motors.m1 =  0.5f * control->roll + thrust * (1.0f + flapperConfig.rollBias / 100.0f); // left motor
     motorThrustUncapped->motors.m4 = -0.5f * control->roll + thrust * (1.0f - flapperConfig.rollBias / 100.0f); // right motor
   #else
-    motorThrustUncapped->motors.m1 = flapperConfig.pitchServoNeutral * act_max / 100.0f + pitch_ampl * control->pitch; // pitch servo
-    motorThrustUncapped->motors.m3 = flapperConfig.yawServoNeutral*act_max / 100.0f - control->yaw; // yaw servo
-    motorThrustUncapped->motors.m2 =  0.5f * control->roll + thrust * (1.0f + flapperConfig.rollBias / 100.0f); // left motor
-    motorThrustUncapped->motors.m4 = -0.5f * control->roll + thrust * (1.0f - flapperConfig.rollBias / 100.0f); // right motor
+    // motorThrustUncapped->motors.m1 = flapperConfig.pitchServoNeutral * act_max / 100.0f + pitch_ampl * control->pitch; // pitch servo
+    // motorThrustUncapped->motors.m3 = flapperConfig.yawServoNeutral*act_max / 100.0f - control->yaw; // yaw servo
+    // motorThrustUncapped->motors.m2 =  0.5f * control->roll + thrust * (1.0f + flapperConfig.rollBias / 100.0f); // left motor
+    // motorThrustUncapped->motors.m4 = -0.5f * control->roll + thrust * (1.0f - flapperConfig.rollBias / 100.0f); // right motor
+    
+    float x = 2 * 3.14f * control->step / 12;
+
+    // Set the main wing angles
+    // R1 : m1, L1 : m4
+    int32_t amp_L1 = amp_L10 + 0.0004 * fmin(0, (control->roll));
+    int32_t amp_R1 = amp_R10 + 0.0004 * fmax(0, (control->roll));
+    int32_t inc_L1 = inc_L10 + D * amp_L10 - 0.0004f * (control->pitch);
+    int32_t inc_R1 = inc_R10 + D * amp_R10 + 0.0004f * (control->pitch);
+    
+    int32_t servo_cmd_L1 = inc_L1;
+    int32_t servo_cmd_R1 = inc_R1;
+    for (int i = 1; i <= nf; i++)
+    {
+      servo_cmd_L1 = servo_cmd_L1 + amp_L1 * (a1[i - 1] * cos(i * x) + b1[i - 1] * sin(i * x));
+      servo_cmd_R1 = servo_cmd_R1 + amp_R1 * (a1[i - 1] * cos(i * x) + b1[i - 1] * sin(i * x));
+    }
+    
+    // servo_cmd_xx [deg] -> motorThrustUncapped.motors.mx [uint16_t]
+    motorThrustUncapped->motors.m4 = 0x7FFF + (servo_cmd_L1-90) * 362.0f;
+    motorThrustUncapped->motors.m1 = 0x7FFF + (servo_cmd_R1-90) * 362.0f;
+
+    int32_t amp_L2 = amp_L20 - 0.0002 * fmax(0, (control->roll));
+    int32_t amp_R2 = amp_R20 - 0.0002 * fmin(0, (control->roll));
+    int32_t inc_L2 = inc_L20 + 0.0004f * (control->pitch);
+    int32_t inc_R2 = inc_R20 - 0.0004f * (control->pitch);
+
+    int32_t servo_cmd_L2 = inc_L2;
+    int32_t servo_cmd_R2 = inc_R2;
+    for (int i = 1; i <= nf; i++)
+    {
+      servo_cmd_L2 = servo_cmd_L2 + (amp_L2 * a2[i - 1] - amp_L1 * a1[i - 1]) * cos(i * x) + (amp_L2 * b2[i - 1] - amp_L1 * b1[i - 1]) * sin(i * x);
+      servo_cmd_R2 = servo_cmd_R2 + (amp_R2 * a2[i - 1] - amp_R1 * a1[i - 1]) * cos(i * x) + (amp_R2 * b2[i - 1] - amp_R1 * b1[i - 1]) * sin(i * x);
+    }
+
+    // Set the folding wing angles
+    // R2 : m2, L2 : m3
+    motorThrustUncapped->motors.m2 = 0x7FFF + (servo_cmd_L2-90) * 362.0f;
+    motorThrustUncapped->motors.m3 = 0x7FFF + (servo_cmd_R2-90) * 362.0f;
   #endif
+  
+
+  // motorThrustUncapped->motors.m1 = control->thrust;
+  // motorThrustUncapped->motors.m2 = 300 * control->roll;
+  // motorThrustUncapped->motors.m3 = 300 * control->pitch;
+  // motorThrustUncapped->motors.m4 = 300 * control->yaw;
 }
 
 bool powerDistributionCap(const motors_thrust_uncapped_t* motorThrustBatCompUncapped, motors_thrust_pwm_t* motorPwm)
