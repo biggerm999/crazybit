@@ -209,6 +209,8 @@ void powerDistribution(const control_t *control, motors_thrust_uncapped_t* motor
 
     // Set the main wing angles
     // R1 : m1, L1 : m4
+
+/*
     int32_t amp_L1 = amp_L10 + 0.0004 * fmin(0, (control->roll));
     int32_t amp_R1 = amp_R10 + 0.0004 * fmax(0, (control->roll));
     int32_t inc_L1 = inc_L10 + D * amp_L10 - 0.0004f * (control->pitch);
@@ -243,6 +245,11 @@ void powerDistribution(const control_t *control, motors_thrust_uncapped_t* motor
     // R2 : m2, L2 : m3
     motorThrustUncapped->motors.m2 = 0x7FFF + (servo_cmd_L2-90) * 362.0f;
     motorThrustUncapped->motors.m3 = 0x7FFF + (servo_cmd_R2-90) * 362.0f;
+    */
+   motorThrustUncapped->motors.m1 = 0x7FFF;
+   motorThrustUncapped->motors.m2 = 0x7FFF;
+   motorThrustUncapped->motors.m3 = 0x7FFF;
+   motorThrustUncapped->motors.m4 = 0x7FFF;
   #endif
   
 

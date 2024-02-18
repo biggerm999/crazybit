@@ -34,8 +34,8 @@
 // Defines for default values in the flapper platform
 
 // Default values for battery limits
-#define DEFAULT_BAT_LOW_VOLTAGE                   6.4f
-#define DEFAULT_BAT_CRITICAL_LOW_VOLTAGE          6.0f
+#define DEFAULT_BAT_LOW_VOLTAGE                   4.0f
+#define DEFAULT_BAT_CRITICAL_LOW_VOLTAGE          4.0f
 #define DEFAULT_BAT_LOW_DURATION_TO_TRIGGER_SEC   5
 
 // Default value for system shutdown in minutes after radio silence.
